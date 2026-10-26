@@ -20,8 +20,23 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 script {
-                    // List workspace root contents and locate the project file automatically
-                    sh "docker run --rm -v \$(pwd):/workspace -w /workspace mcr.microsoft.com/dotnet/sdk:10.0 sh -c 'ls -la && dotnet test \$(find . -name \"*.csproj\" | head -n 1)'"
+                    sh '''
+                        docker run --rm -v ${WORKSPACE}:/workspace -w /workspace mcr.microsoft.com/dotnet/sdk:10.0 sh -c '
+                            echo "=== Inspecting Workspace Directory ==="
+                            find . -maxdepth 3 -ls
+                            
+                            echo "=== Locating Project File ==="
+                            PROJECT_FILE=$(find . -name "*.csproj" | head -n 1)
+                            
+                            if [ -z "$PROJECT_FILE" ]; then
+                                echo "ERROR: No .csproj file found in the workspace!"
+                                exit 1
+                            fi
+                            
+                            echo "Found project file at: $PROJECT_FILE"
+                            dotnet test "$PROJECT_FILE"
+                        '
+                    '''
                 }
             }
         }
