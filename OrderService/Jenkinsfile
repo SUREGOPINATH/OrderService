@@ -51,8 +51,12 @@ pipeline {
                         
                         echo "Found project file at: $PROJECT_FILE"
                         
+                        // Extract just the directory name to set as the container's working directory
+                        PROJECT_DIR=$(dirname "$PROJECT_FILE")
+                        PROJECT_NAME=$(basename "$PROJECT_FILE")
+                        
                         echo "=== Running Unit Tests in Docker Container ==="
-                        docker run --rm -v ${WORKSPACE}:/workspace -w /workspace mcr.microsoft.com/dotnet/sdk:10.0 dotnet test "$PROJECT_FILE"
+                        docker run --rm -v ${WORKSPACE}:/workspace -w /workspace/$PROJECT_DIR mcr.microsoft.com/dotnet/sdk:10.0 dotnet test "$PROJECT_NAME"
                     '''
                 }
             }
