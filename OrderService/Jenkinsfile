@@ -8,7 +8,6 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'order-service'
-        TAG = "${env.BUILD_NUMBER}"
         
         // Your exact credential ID and Docker Hub repository path
         DOCKER_HUB_CREDENTIALS_ID = 'Docker_Credentials' 
@@ -61,7 +60,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${env.IMAGE_NAME}:${env.TAG} -t ${env.IMAGE_NAME}:latest ./OrderService"
+                    sh "docker build -t ${env.IMAGE_NAME}:latest ./OrderService"
                 }
             }
         }
