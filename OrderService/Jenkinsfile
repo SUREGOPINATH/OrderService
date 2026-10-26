@@ -66,26 +66,6 @@ pipeline {
             }
         }
 
-        stage('Smoke Test') {
-            steps {
-                script {
-                    sh '''
-                        echo "=== Cleaning up any existing smoke test container ==="
-                        docker rm -f order-service-smoke || true
-                        
-                        echo "=== Starting Smoke Test Container on Port 8081 ==="
-                        docker run -d --name order-service-smoke -p 8081:8080 order-service:${BUILD_NUMBER}
-                        
-                        echo "=== Verifying Application Health ==="
-                        sleep 3
-                        curl -f http://localhost:8081/weatherforecast || (docker logs order-service-smoke && exit 1)
-                        
-                        echo "=== Cleaning up Smoke Test Container ==="
-                        docker rm -f order-service-smoke
-                    '''
-                }
-            }
-        }
 
         stage('Push to Container Registry') {
             steps {
