@@ -13,23 +13,10 @@ pipeline {
             }
         }
 
-        stage('Restore & Build .NET 10') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh 'dotnet restore OrderService/OrderService.csproj'
-                        sh 'dotnet build OrderService/OrderService.csproj --configuration Release --no-restore'
-                    } else {
-                        bat 'dotnet restore OrderService/OrderService.csproj'
-                        bat 'dotnet build OrderService/OrderService.csproj --configuration Release --no-restore'
-                    }
-                }
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Dockerfile handles dotnet restore, build, and publish internally
                     if (isUnix()) {
                         sh "docker build -t ${env.IMAGE_NAME}:${env.TAG} -t ${env.IMAGE_NAME}:latest ./OrderService"
                     } else {
@@ -42,7 +29,7 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully! .NET 10 app built and containerized.'
+            echo 'Pipeline completed successfully! .NET 10 app containerized via Docker.'
         }
         failure {
             echo 'Pipeline failed. Check the logs above for details.'
