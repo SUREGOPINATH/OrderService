@@ -1,11 +1,8 @@
 pipeline {
-    agent {
-        label 'linux-agent' // Adjust to your agent label if needed, or leave as agent any
-    }
+    agent any
 	
 	options {
         // Automatically cleans the workspace BEFORE checking out code
-        cleanWs()
         timestamps()
     }
 
@@ -19,6 +16,12 @@ pipeline {
     }
 
     stages {
+	
+		stage('Clean Workspace') {
+            steps {
+                cleanWs(deleteDirs: true, notFailBuild: true)
+            }
+        }
 	
         stage('Checkout') {
             steps {
