@@ -4,6 +4,10 @@ pipeline {
     environment {
         IMAGE_NAME = 'order-service'
         TAG = "${env.BUILD_NUMBER}"
+        
+        // Your exact credential ID and Docker Hub repository path
+        DOCKER_HUB_CREDENTIALS_ID = 'Docker_Credentials' 
+        DOCKER_IMAGE_REPO = 'gopinath3008/order-service'
     }
 
     stages {
@@ -13,14 +17,51 @@ pipeline {
             }
         }
 
+        stage('Run Unit Tests') {
+            steps {
+                script {
+                    sh "docker run --rm -v \$(pwd):/workspace -w /workspace/OrderService mcr.microsoft.com/dotnet/sdk:10.0 dotnet test"
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Dockerfile handles dotnet restore, build, and publish internally
-                    if (isUnix()) {
-                        sh "docker build -t ${env.IMAGE_NAME}:${env.TAG} -t ${env.IMAGE_NAME}:latest ./OrderService"
-                    } else {
-                        bat "docker build -t ${env.IMAGE_NAME}:${env.TAG} -t ${env.IMAGE_NAME}:latest ./OrderService"
+                    sh "docker build -t ${env.IMAGE_NAME}:${env.TAG} -t ${env.IMAGE_NAME}:latest ./OrderService"
+                }
+            }
+        }
+
+        stage('Smoke Test Container') {
+            steps {
+                script {
+                    sh "docker run -d --name order-service-smoke -p 8080:8080 ${env.IMAGE_NAME}:${env.TAG}"
+                    sleep 5
+                    sh "curl -I http://localhost:8080 || exit 1"
+                }
+            }
+            post {
+                always {
+                    script {
+                        sh "docker stop order-service-smoke || true"
+                        sh "docker rm order-service-smoke || true"
+                    }
+                }
+            }
+        }
+
+        stage('Push to Container Registry') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${env.DOCKER_HUB_CREDENTIALS_ID}", 
+                                                  usernameVariable: 'DOCKER_USER', 
+                                                  passwordVariable: 'DOCKER_PASS')]) {
+                    script {
+                        sh "echo ${env.DOCKER_PASS} | docker login -u ${env.DOCKER_USER} --password-stdin"
+                        sh "docker tag ${env.IMAGE_NAME}:${env.TAG} ${env.DOCKER_IMAGE_REPO}:${env.TAG}"
+                        sh "docker tag ${env.IMAGE_NAME}:latest ${env.DOCKER_IMAGE_REPO}:latest"
+                        sh "docker push ${env.DOCKER_IMAGE_REPO}:${env.TAG}"
+                        sh "docker push ${env.DOCKER_IMAGE_REPO}:latest"
                     }
                 }
             }
@@ -29,7 +70,7 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully! .NET 10 app containerized via Docker.'
+            echo 'Pipeline completed successfully: Tested, Built, Smoke-Tested, and Pushed to Docker Hub!'
         }
         failure {
             echo 'Pipeline failed. Check the logs above for details.'
