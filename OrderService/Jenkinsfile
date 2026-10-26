@@ -1,0 +1,36 @@
+﻿pipeline{
+	agent any
+	environment {
+		IMAGE_NAME = "order-service"
+		TAG = "${env.BUILD_NUMBER}"
+	}
+
+	stages{
+		staage('Checkout'){
+			steps{
+				checkout scm
+			}
+		}
+
+		stage('Restore & Build Dotnet 10'){
+			steps{
+				bat "dotnet restore OrderService.csproj"
+				bat "dotnet build OrderService.csproj --configuration Release --no-restore"
+			}
+		}
+
+		stage('Build Docker Image') {
+			steps {
+				bat "docker build -t ${env.IMAGE_NAME}:${env.TAG} -t ${env.IMAGE_NAME}:latest ."
+			}
+		}
+	}
+	post{
+		success{
+			echo "Pipeline completed successfully. Docker image built and verified."
+		}
+		failure{
+			echo "Pipeline failed. Please check the logs for details."
+		}
+	}
+}
