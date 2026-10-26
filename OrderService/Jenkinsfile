@@ -33,7 +33,7 @@
             echo 'Pipeline completed successfully! .NET 10 app built and containerized.'
         }
         failure {
-            echo 'Pipeline failed. Check the logs above for details.'
+            echo 'Pipeline failed. Check the logs above for more details.'
         }
     }
 }
