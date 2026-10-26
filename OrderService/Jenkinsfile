@@ -1,9 +1,9 @@
-﻿pipeline {
+pipeline {
     agent any
 
     environment {
         IMAGE_NAME = 'order-service'
-        TAG = "${env.BUILD_NUMBER}"
+        TAG = ""
     }
 
     stages {
@@ -22,8 +22,7 @@
 
         stage('Build Docker Image') {
             steps {
-                // Builds the Docker image since Dockerfile and csproj are in the same directory
-                bat "docker build -t ${env.IMAGE_NAME}:${env.TAG} -t ${env.IMAGE_NAME}:latest ."
+                bat "docker build -t : -t :latest ."
             }
         }
     }
@@ -33,7 +32,7 @@
             echo 'Pipeline completed successfully! .NET 10 app built and containerized.'
         }
         failure {
-            echo 'Pipeline failed. Check the logs above for more details.'
+            echo 'Pipeline failed. Check the logs above for details.'
         }
     }
 }
