@@ -14,9 +14,12 @@ pipeline {
 	
         stage('Checkout') {
             steps {
-                // Cleans the workspace and forces a fresh checkout from GitHub
                 cleanWs deleteDirs: true, notFailBuild: true
-                checkout scm
+                // Explicitly force checkout from the master branch
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/master']],
+                    userRemoteConfigs: [[url: 'https://github.com/SUREGOPINATH/OrderService.git']]
+                ])
             }
         }
 
