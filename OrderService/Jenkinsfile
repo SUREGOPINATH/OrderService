@@ -51,11 +51,8 @@ pipeline {
                         
                         echo "Found project file at: $PROJECT_FILE"
                         
-                        # Convert relative path (./OrderService/OrderService.csproj) to absolute container path (/workspace/OrderService/OrderService.csproj)
-                        CONTAINER_PROJECT_PATH="/workspace/$(echo "$PROJECT_FILE" | sed 's#^\\./##')"
-                        
-                        echo "=== Running Unit Tests in Docker Container ==="
-                        docker run --rm -v ${WORKSPACE}:/workspace mcr.microsoft.com/dotnet/sdk:10.0 dotnet test "$CONTAINER_PROJECT_PATH"
+                        echo "=== Running Unit Tests in Docker Container via Stream ==="
+                        tar c . | docker run --rm -i -w /workspace mcr.microsoft.com/dotnet/sdk:10.0 sh -c "tar xf - && dotnet test $PROJECT_FILE"
                     '''
                 }
             }
