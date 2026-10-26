@@ -50,7 +50,9 @@ pipeline {
                         fi
                         
                         echo "Found project file at: $PROJECT_FILE"
-                        dotnet test "$PROJECT_FILE"
+                        
+                        echo "=== Running Unit Tests in Docker Container ==="
+                        docker run --rm -v ${WORKSPACE}:/workspace -w /workspace mcr.microsoft.com/dotnet/sdk:10.0 dotnet test "$PROJECT_FILE"
                     '''
                 }
             }
