@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'order-service'
-        TAG = ""
+        TAG = "${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -15,14 +15,27 @@ pipeline {
 
         stage('Restore & Build .NET 10') {
             steps {
-                bat 'dotnet restore OrderService.csproj'
-                bat 'dotnet build OrderService.csproj --configuration Release --no-restore'
+                script {
+                    if (isUnix()) {
+                        sh 'dotnet restore OrderService/OrderService.csproj'
+                        sh 'dotnet build OrderService/OrderService.csproj --configuration Release --no-restore'
+                    } else {
+                        bat 'dotnet restore OrderService/OrderService.csproj'
+                        bat 'dotnet build OrderService/OrderService.csproj --configuration Release --no-restore'
+                    }
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t : -t :latest ."
+                script {
+                    if (isUnix()) {
+                        sh "docker build -t ${env.IMAGE_NAME}:${env.TAG} -t ${env.IMAGE_NAME}:latest ./OrderService"
+                    } else {
+                        bat "docker build -t ${env.IMAGE_NAME}:${env.TAG} -t ${env.IMAGE_NAME}:latest ./OrderService"
+                    }
+                }
             }
         }
     }
