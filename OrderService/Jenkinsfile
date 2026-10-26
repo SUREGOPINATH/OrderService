@@ -11,8 +11,11 @@ pipeline {
     }
 
     stages {
+	
         stage('Checkout') {
             steps {
+                // Cleans the workspace and forces a fresh checkout from GitHub
+                cleanWs deleteDirs: true, notFailBuild: true
                 checkout scm
             }
         }
