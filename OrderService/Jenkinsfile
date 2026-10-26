@@ -66,20 +66,23 @@ pipeline {
             }
         }
 
-        stage('Smoke Test Container') {
+        stage('Smoke Test') {
             steps {
                 script {
-                    sh "docker run -d --name order-service-smoke -p 8080:8080 ${env.IMAGE_NAME}:${env.TAG}"
-                    sleep 5
-                    sh "curl -I http://localhost:8080 || exit 1"
-                }
-            }
-            post {
-                always {
-                    script {
-                        sh "docker stop order-service-smoke || true"
-                        sh "docker rm order-service-smoke || true"
-                    }
+                    sh '''
+                        echo "=== Cleaning up any existing smoke test container ==="
+                        docker rm -f order-service-smoke || true
+                        
+                        echo "=== Starting Smoke Test Container on Port 8081 ==="
+                        docker run -d --name order-service-smoke -p 8081:8080 order-service:${BUILD_NUMBER}
+                        
+                        echo "=== Verifying Application Health ==="
+                        sleep 3
+                        curl -f http://localhost:8081/weatherforecast || (docker logs order-service-smoke && exit 1)
+                        
+                        echo "=== Cleaning up Smoke Test Container ==="
+                        docker rm -f order-service-smoke
+                    '''
                 }
             }
         }
