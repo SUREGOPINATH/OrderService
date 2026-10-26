@@ -51,7 +51,7 @@ pipeline {
                         
                         echo "Found project file at: $PROJECT_FILE"
                         
-                        // Extract just the directory name to set as the container's working directory
+                        # Extract just the directory name to set as the container's working directory
                         PROJECT_DIR=$(dirname "$PROJECT_FILE")
                         PROJECT_NAME=$(basename "$PROJECT_FILE")
                         
