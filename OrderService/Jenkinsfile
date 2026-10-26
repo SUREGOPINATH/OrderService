@@ -20,7 +20,8 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 script {
-                    sh "docker run --rm -v \$(pwd):/workspace -w /workspace/OrderService mcr.microsoft.com/dotnet/sdk:10.0 dotnet test"
+                    // Mount the workspace and run dotnet test directly targeting the project folder
+                    sh "docker run --rm -v \$(pwd):/workspace -w /workspace/OrderService mcr.microsoft.com/dotnet/sdk:10.0 dotnet test OrderService.csproj"
                 }
             }
         }
