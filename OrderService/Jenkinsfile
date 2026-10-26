@@ -1,5 +1,13 @@
 pipeline {
-    agent any
+    agent {
+        label 'linux-agent' // Adjust to your agent label if needed, or leave as agent any
+    }
+	
+	options {
+        // Automatically cleans the workspace BEFORE checking out code
+        cleanWs()
+        timestamps()
+    }
 
     environment {
         IMAGE_NAME = 'order-service'
@@ -27,21 +35,19 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        docker run --rm -v ${WORKSPACE}:/workspace -w /workspace mcr.microsoft.com/dotnet/sdk:10.0 sh -c '
-                            echo "=== Inspecting Workspace Directory ==="
-                            find . -maxdepth 3 -ls
-                            
-                            echo "=== Locating Project File ==="
-                            PROJECT_FILE=$(find . -name "*.csproj" | head -n 1)
-                            
-                            if [ -z "$PROJECT_FILE" ]; then
-                                echo "ERROR: No .csproj file found in the workspace!"
-                                exit 1
-                            fi
-                            
-                            echo "Found project file at: $PROJECT_FILE"
-                            dotnet test "$PROJECT_FILE"
-                        '
+                        echo "=== Inspecting Workspace Directory ==="
+                        find . -maxdepth 3 -ls
+                        
+                        echo "=== Locating Project File ==="
+                        PROJECT_FILE=$(find . -name "*.csproj" | head -n 1)
+                        
+                        if [ -z "$PROJECT_FILE" ]; then
+                            echo "ERROR: No .csproj file found in the workspace!"
+                            exit 1
+                        fi
+                        
+                        echo "Found project file at: $PROJECT_FILE"
+                        dotnet test "$PROJECT_FILE"
                     '''
                 }
             }
